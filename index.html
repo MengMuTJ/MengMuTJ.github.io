@@ -8,12 +8,83 @@
     <title>World Happiness Chart</title>
 </head>
 <body onload="init()">
-    <h1>World Happiness Report </h1>
-    <svg width="460" height="400" id="example1"></svg>
+    <h1>World Happiness Report</h1>
+    <button></button>
+    <svg id="happiness"></svg>
     <script>
+        const margin = {top: 20, right: 30, bottom: 40, left: 200};
+        const width = 1200 - margin.left - margin.right;
+        const height = 1600 - margin.top - margin.bottom;
+
+        const colors = [ 'rgb(42, 245, 152)', 'rgb(8, 179, 229)' ];
+        const h = d3.scaleLinear().range([height, 0]);
+
+        const svg = d3.select("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
         const init = async () => {
-            const data = await d3.csv('https://mengmutj.github.io/allyearscsv.csv', (d) => console.log(d))
+            const data = await 
+            d3.csv('https://mengmutj.github.io/allyearscsv.csv', (d) => {
+                return {
+                    country: d.Country,
+                    dystopiaResidual: d. Dystopia_Residual,
+                    family: d.Family,
+                    freedom: d.Freedom,
+                    gdp: d.GDP_Capita,
+                    generosity: d.Generosity,
+                    corruption: d.Gov_Corruption,
+                    lifeExpectancy: d.Life_Expectancy,
+                    rank: d.Rank,
+                    region: d.Region,
+                    score: d.Score,
+                    year: d.Year
+                }
+            })
             console.log(data)
+
+        const x_scale = d3.scaleLinear().domain([0, 10]).range([0, width]);
+            svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x_scale))
+            .selectAll("text")
+            .attr("transform", "translate(2,0)")
+            .style("text-anchor", "end");
+
+        const y_scale = d3.scaleBand().domain(data.map(d => d.country)).range([0, height]).padding(.2);
+        svg.append("g")
+        .call(d3.axisLeft(y_scale))
+
+        // const grad = svg.append('defs')
+        // .append('linearGradient')
+        // .attr('id', 'grad')
+        // .attr('x1', '0%')
+        // .attr('x2', '0%')
+        // .attr('y1', '0%')
+        // .attr('y2', '100%')
+        
+        // grad.selectAll('stop')
+        // .data(colors)
+        // .enter()
+        // .append('stop')
+        // .style('stop-color', function(d){ return d; })
+        // .attr('offset', function(d,i){
+        //     return 100 * (i / (colors.length - 1)) + '%';
+        // })
+
+        svg
+        .selectAll("rect")
+        .data(data)
+        .enter()
+        .append('rect')
+        .attr("x", x_scale(0))
+        .attr("y", function(d) { return y_scale(d.country); })
+        .attr("width", function(d) { return x_scale(d.score); })
+        .attr("height", y_scale.bandwidth())
+        .attr("fill", "#69b3a2")
+        // .style('fill', 'url(#grad)')
         }
     </script>
 </body>
