@@ -12,29 +12,34 @@
 
 <body id="container">
 
-    <h1>World Happiness Ranking vs. GDP Per Capita (2015 - 2019)</h1>
+    <header>World Happiness Narrative Visualization (2015 - 2019)</header>
 
-    <div id="year-container">
-        <p>Select a scene:</p>
-        <button onclick="loadRanking()">Ranking (Home)</button>
-        <button onclick="loadLifeView()">Life Expectancy</button>
-        <button onclick="loadGDPView()">GDP Per Capita</button>
-    </div>
+    <nav>
+        <div id="scene-container">
+            <span>Choose a scene:</span>
+            <button onclick="loadRanking()" id="rank-btn">Ranking</button>
+            <button onclick="loadLifeView()" id="life-btn">Life Expectancy</button>
+            <button onclick="loadGDPView()" id="gdp-btn">GDP Per Capita</button>
+        </div>
 
-    <div id="year-container">
-        <p>Select a year:</p>
-        <button onclick="updateLineGDP(data15)">2015</button>
-        <button onclick="updateLineGDP(data16)">2016</button>
-        <button onclick="updateLineGDP(data17)">2017</button>
-        <button onclick="updateLineGDP(data18)">2018</button>
-        <button onclick="updateLineGDP(data19)">2019</button>
-    </div>
+        <div id="year-container">
+            <span>Choose a year:</span>
+            <button onclick="updateLineGDP(data15)">2015</button>
+            <button onclick="updateLineGDP(data16)">2016</button>
+            <button onclick="updateLineGDP(data17)">2017</button>
+            <button onclick="updateLineGDP(data18)">2018</button>
+            <button onclick="updateLineGDP(data19)">2019</button>
+        </div>
+    </nav>
 
-    <div id="dataviz"><svg id="happiness"></svg></div>
-
+    <section id="dataviz"><svg id="happiness"></svg></section>
+    <footer>
+        Data source: &nbsp
+        <a target="_blank" href="https://www.kaggle.com/datasets/unsdsn/world-happiness">World Happiness Report from
+            Kaggle</a>
+    </footer>
     <script>
         window.addEventListener("load", (event) => {
-            console.log("page is fully loaded");
             loadData()
         });
         const loadGDPView = () => {
@@ -65,54 +70,85 @@
             .attr("transform", `translate(0, ${height})`)
             .call(d3.axisBottom(x));
         svg.append("text")
-            .attr("x", 450 )
-            .attr("y",  570 )
+            .attr("x", 450)
+            .attr("y", 570)
             .style("text-anchor", "middle")
             .text("Happiness Score");
 
         const y = d3.scaleLinear()
-            .domain([0, 3])
+            .domain([0, 2.3])
             .range([height, 0]);
         svg.append("g")
             .call(d3.axisLeft(y));
         svg.append("text")      // text label for the x axis
-        .attr("transform", "rotate(-90)")
-        .attr("y", -50)
-        .attr("x",0 - (height / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -50)
+            .attr("x", 0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
             .text("GDP Per Capita");
 
+        const addAnnotation = (note, x, y, dy, dx) => {
+            const annotation = [
+                {
+                    note: note,
+                    connector: {
+                        end: "arrow",
+                        type: "line",
+                        lineType: "vertical",
+                        endScale: 1
+                    },
+                    type: d3.annotationCalloutElbow,
+                    x: x,
+                    y: y,
+                    dy: dy,
+                    dx: dx,
+                    color: "#E8336D"
+                }
+            ]
+            const makeAnnotations = d3.annotation()
+                .type(d3.annotationLabel)
+                .annotations(annotation)
+            d3.select(".annotation-group")
+                .call(makeAnnotations)
+            d3.select("svg")
+                .append("g")
+                .attr("class", "annotation-group")
+                .call(makeAnnotations)
+        }
+
         const updateLineGDP = (data) => {
-            // const usa = data.filter(d => d.country === 'United States')
-            // const annotations = [
-            //     {
-            //         note: {
-            //             label: `${usa[0].country} had a score of ${Number(usa[0].score).toFixed(2)} in the year of ${usa[0].year}.`,
-            //             title: `${usa[0].country} was ranked ${usa[0].rank}`
-            //         },
-            //         connector: {
-            //             end: "dot",
-            //             type: "line",
-            //             lineType: "vertical",
-            //             endScale: 1
-            //         },
-            //         x: 830,
-            //         y: 25,
-            //         dy: 20,
-            //         dx: 100
-            //     }].map(function (d) { d.color = "#E8336D"; return d })
+            const usa = data.filter(d => d.country === 'United States')
+            if (usa[0].year === '2017') {
+                const note =
+                {
+                    label: `During 2015-2019, 
+                        ${usa[0].country} had its highest GDP per capita, ${Number(usa[0].gdp).toFixed(2)}, with a happiness
+                        score of ${Number(usa[0].score).toFixed(2)}, 
+                        and ranked ${Number(usa[0].rank)} in the world 
+                        in the year of ${usa[0].year}.`,
+                    title: `Happiness Score vs. GDP Per Capita in United States`,
+                    wrap: 380
+                }
+                addAnnotation(note, 818, 195, -60, -100)
+            } else if (usa[0].year === '2015') {
+                const note =
+                {
+                    label: `During 2015-2019, 
+                        ${usa[0].country} had its highest happiness score, 
+                        a score of ${Number(usa[0].score).toFixed(2)}, 
+                        and ranked ${Number(usa[0].rank)} in the world 
+                        with its lowest GDP per capita of ${Number(usa[0].gdp).toFixed(2)} 
+                        in the year of ${usa[0].year}.`,
+                    title: `Happiness Score vs. GDP Per Capita in United States`,
+                    wrap: 380
+                }
+                addAnnotation(note, 838, 227, -80, -50)
 
-            // const makeAnnotations = d3.annotation()
-            //     .type(d3.annotationLabel)
-            //     .annotations(annotations)
-
-            // d3.select(".annotation-group")
-            //     .call(makeAnnotations)
-            // d3.select("svg")
-            //     .append("g")
-            //     .attr("class", "annotation-group")
-            //     .call(makeAnnotations)
+            }
+            else {
+                d3.select(".annotation-group").remove()
+            }
 
             const Tooltip = d3.select("#dataviz")
                 .append("div")
@@ -131,7 +167,7 @@
             }
             const mousemove = function (event, d) {
                 Tooltip
-                    .html("Country: " + d.country + "<br /> GPD per Capita: " + Number(d.gdp).toFixed(4) + "<br /> Happiness Score: " + d.score + "<br /> Happiness Ranking: " + d.rank )
+                    .html("Country: " + d.country + "<br /> GPD per Capita: " + Number(d.gdp).toFixed(4) + "<br /> Happiness Score: " + Number(d.score).toFixed(4) + "<br /> Happiness Ranking: " + d.rank)
                     .style("left", `${event.layerX + 10}px`)
                     .style("top", `${event.layerY}px`)
             }
@@ -139,6 +175,23 @@
                 Tooltip
                     .style("opacity", 0)
             }
+
+            const year = data[0]['year']
+            svg.selectAll(".title").remove();
+            svg.append("text")
+                .attr('class', 'title')
+                .attr("x", (width / 2))
+                .attr("y", 0 - (margin.top / 4) + 2)
+                .style("text-anchor", "middle")
+                .style("font-size", "1.5rem")
+                .text(`Impact of GDP Per Capita on Happiness Score in ${year}`);
+            svg.append("text")
+                .attr('class', 'title')
+                .attr("x", (width / 2))
+                .attr("y", 0 - (margin.top / 4) + 30)
+                .style("text-anchor", "middle")
+                .style("font-size", "1rem")
+                .text(`*Hover over the points for more details`);
 
             svg.selectAll("circle").remove();
             const dots = svg
