@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <title>World Happiness Chart</title>
+</head>
+
+<body id="container">
+
+    <h1>World Happiness Ranking vs. Life Expectancy (2015 - 2019)</h1>
+
+    <div id="year-container">
+        <p>Select a scene:</p>
+        <button onclick="loadRanking()">Ranking (Home)</button>
+        <button onclick="loadLifeView()">Life Expectancy</button>
+        <button onclick="loadGDPView()">GDP Per Capita</button>
+    </div>
+
+    <div id="year-container">
+        <p>Select a year:</p>
+        <button onclick="updateLineLife(data15)">2015</button>
+        <button onclick="updateLineLife(data16)">2016</button>
+        <button onclick="updateLineLife(data17)">2017</button>
+        <button onclick="updateLineLife(data18)">2018</button>
+        <button onclick="updateLineLife(data19)">2019</button>
+    </div>
+
+    <div id="dataviz"><svg id="happiness"></svg></div>
+
+    <script>
+        window.addEventListener("load", (event) => {
+            console.log("page is fully loaded");
+            loadData()
+        });
+        const loadGDPView = () => {
+            window.location = "gdp-scene.html";
+        }
+        const loadLifeView = () => {
+            window.location = "life-scene.html";
+        }
+        const loadRanking = () => {
+            window.location = "index.html";
+        }
+        let data15, data16, data17, data18, data19
+        const margin = { top: 20, right: 30, bottom: 40, left: 150 };
+        const width = 1000 - margin.left - margin.right;
+        const height = 600 - margin.top - margin.bottom;
+
+        const svg = d3
+            .select("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        const x = d3.scaleLinear()
+            .domain([2.5, 8])
+            .range([0, width]);
+        svg.append("g")
+            .attr("transform", `translate(0, ${height})`)
+            .call(d3.axisBottom(x));
+        svg.append("text")
+            .attr("x", 450 )
+            .attr("y",  570 )
+            .style("text-anchor", "middle")
+            .text("Happiness Score");
+
+        const y = d3.scaleLinear()
+            .domain([0, 3])
+            .range([height, 0]);
+        svg.append("g")
+            .call(d3.axisLeft(y));
+        svg.append("text")      // text label for the x axis
+        .attr("transform", "rotate(-90)")
+        .attr("y", -50)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+            .text("Life Expectancy Per Capita");
+
+        const updateLineLife = (data) => {
+            // const usa = data.filter(d => d.country === 'United States')
+            // const annotations = [
+            //     {
+            //         note: {
+            //             label: `${usa[0].country} had a score of ${Number(usa[0].score).toFixed(2)} in the year of ${usa[0].year}.`,
+            //             title: `${usa[0].country} was ranked ${usa[0].rank}`
+            //         },
+            //         connector: {
+            //             end: "dot",
+            //             type: "line",
+            //             lineType: "vertical",
+            //             endScale: 1
+            //         },
+            //         x: 830,
+            //         y: 25,
+            //         dy: 20,
+            //         dx: 100
+            //     }].map(function (d) { d.color = "#E8336D"; return d })
+
+            // const makeAnnotations = d3.annotation()
+            //     .type(d3.annotationLabel)
+            //     .annotations(annotations)
+
+            // d3.select(".annotation-group")
+            //     .call(makeAnnotations)
+            // d3.select("svg")
+            //     .append("g")
+            //     .attr("class", "annotation-group")
+            //     .call(makeAnnotations)
+
+            const Tooltip = d3.select("#dataviz")
+                .append("div")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "white")
+                .style("border", "solid")
+                .style("border-width", "2px")
+                .style("border-radius", "5px")
+                .style("padding", "5px")
+                .style("position", "absolute")
+            // Three function that change the tooltip when user hover / move / leave a cell
+            const mouseover = function (event, d) {
+                Tooltip
+                    .style("opacity", 1)
+            }
+            const mousemove = function (event, d) {
+                Tooltip
+                    .html("Country: " + d.country + "<br /> Life Expectancy: " + Number(d.lifeExpectancy).toFixed(4) + "<br /> Happiness Score: " + d.score + "<br /> Happiness Ranking: " + d.rank )
+                    .style("left", `${event.layerX + 10}px`)
+                    .style("top", `${event.layerY}px`)
+            }
+            const mouseleave = function (event, d) {
+                Tooltip
+                    .style("opacity", 0)
+            }
+
+            svg.selectAll("circle").remove();
+            const dots = svg
+                .append('g')
+                .selectAll("dot")
+                .data(data)
+            dots
+                .enter()
+                .append("circle")
+                .attr("cx", d => x(Number(d.score)))
+                .attr("cy", d => y(Number(d.lifeExpectancy)))
+                .attr("r", 5)
+                .style("fill", "#69b3a2")
+                .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave)
+        }
+
+        var loadData = async () => {
+            data15 = await d3.csv(
+                "https://mengmutj.github.io/allyearscsv.csv",
+                (d) => {
+                    if (d.Year === "2015") {
+                        return {
+                            country: d.Country,
+                            gdp: d.GDP_Capita,
+                            lifeExpectancy: d.Life_Expectancy,
+                            rank: d.Rank,
+                            score: d.Score,
+                            year: d.Year
+                        };
+                    }
+                }
+            );
+            data16 = await d3.csv(
+                "https://mengmutj.github.io/allyearscsv.csv",
+                (d) => {
+                    if (d.Year === "2016") {
+                        return {
+                            country: d.Country,
+                            gdp: d.GDP_Capita,
+                            lifeExpectancy: d.Life_Expectancy,
+                            rank: d.Rank,
+                            score: d.Score,
+                            year: d.Year
+                        };
+                    }
+                }
+            );
+
+            data17 = await d3.csv(
+                "https://mengmutj.github.io/allyearscsv.csv",
+                (d) => {
+                    if (d.Year === "2017") {
+                        return {
+                            country: d.Country,
+                            gdp: d.GDP_Capita,
+                            lifeExpectancy: d.Life_Expectancy,
+                            rank: d.Rank,
+                            score: d.Score,
+                            year: d.Year
+                        };
+                    }
+                }
+            );
+
+            data18 = await d3.csv(
+                "https://mengmutj.github.io/allyearscsv.csv",
+                (d) => {
+                    if (d.Year === "2018") {
+                        return {
+                            country: d.Country,
+                            gdp: d.GDP_Capita,
+                            lifeExpectancy: d.Life_Expectancy,
+                            rank: d.Rank,
+                            score: d.Score,
+                            year: d.Year
+                        };
+                    }
+                }
+            );
+
+            data19 = await d3.csv(
+                "https://mengmutj.github.io/allyearscsv.csv",
+                (d) => {
+                    if (d.Year === "2019") {
+                        return {
+                            country: d.Country,
+                            gdp: d.GDP_Capita,
+                            lifeExpectancy: d.Life_Expectancy,
+                            rank: d.Rank,
+                            score: d.Score,
+                            year: d.Year
+                        };
+                    }
+                }
+            );
+            console.log(data15)
+            updateLineLife(data15)
+        };
+
+    </script>
+</body>
+
+</html>
