@@ -1,0 +1,20 @@
+#container {
+  display: flex;
+  margin: 1rem;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#year-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+#happiness {
+  /* border: 1px solid red; */
+  margin-top: 2rem;
+}
+
+button {
+}
