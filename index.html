@@ -11,13 +11,14 @@
 </head>
 
 <body onload="init()" id="container">
-    
-    <h1>World Happiness Report (2015 - 2019)</h1>
+
+    <h1>World Happiness Score Ranking (2015 - 2019)</h1>
 
     <div id="year-container">
-        <p>Select a param:</p>
-        <button onclick="life(data15)">Life Expectancy</button>
-        <button onclick="gdp(data16)">GDP Per Capita</button>
+        <p>Select a scene:</p>
+        <button onclick="loadRanking()">Ranking (Home)</button>
+        <button onclick="loadLifeView()">Life Expectancy</button>
+        <button onclick="loadGDPView()">GDP Per Capita</button>
     </div>
 
     <div id="year-container">
@@ -28,14 +29,23 @@
         <button onclick="updateBar(data18)">2018</button>
         <button onclick="updateBar(data19)">2019</button>
     </div>
-    <svg id="happiness"></svg>
-    
+
+    <div id="dataviz"><svg id="happiness"></svg></div>
+
     <script>
+        const loadGDPView = () => {
+            window.location="gdp-scene.html";
+        }
+        const loadLifeView = () => {
+            window.location="life-scene.html";
+        }
+        const loadRanking = () => {
+            window.location = "index.html";
+        }
+        let data15, data16, data17, data18, data19
         const margin = { top: 20, right: 30, bottom: 40, left: 150 };
         const width = 1000 - margin.left - margin.right;
         const height = 1600 - margin.top - margin.bottom;
-        const colors = ["rgb(42, 245, 152)", "rgb(8, 179, 229)"];
-        const h = d3.scaleLinear().range([height, 0]);
 
         const svg = d3
             .select("svg")
@@ -46,11 +56,9 @@
 
         const y_scale = d3
             .scaleBand()
-            // .domain(sortedData.map((d) => { return d.country }))
             .range([0, height])
             .padding(0.2);
         const yAxis = svg.append("g")
-        // .call(d3.axisLeft(y_scale));
 
         const x_scale = d3.scaleLinear().domain([0, 9]).range([0, width]);
         const xAxis = svg
@@ -60,13 +68,6 @@
             .selectAll("text")
             .attr("transform", "translate(2,0)")
             .style("text-anchor", "end");
-
-        const life = () => {
-
-        }
-        const gdp = () => {
-
-        }
 
         const updateBar = (data) => {
             const sortedData = data.sort((a, b) =>
@@ -98,7 +99,7 @@
                 .type(d3.annotationLabel)
                 .annotations(annotations)
 
-            d3.select(".annotation-group") //<- this should
+            d3.select(".annotation-group")
                 .call(makeAnnotations)
             d3.select("svg")
                 .append("g")
@@ -122,7 +123,6 @@
                 .attr("fill", "#69b3a2");
         }
 
-        let data15, data16, data17, data18, data19
         const init = async () => {
             data15 = await d3.csv(
                 "https://mengmutj.github.io/allyearscsv.csv",
@@ -130,38 +130,27 @@
                     if (d.Year === "2015") {
                         return {
                             country: d.Country,
-                            dystopiaResidual: d.Dystopia_Residual,
-                            family: d.Family,
-                            freedom: d.Freedom,
                             gdp: d.GDP_Capita,
-                            generosity: d.Generosity,
-                            corruption: d.Gov_Corruption,
                             lifeExpectancy: d.Life_Expectancy,
                             rank: d.Rank,
-                            region: d.Region,
                             score: d.Score,
-                            year: d.Year,
+                            year: d.Year
                         };
                     }
                 }
             );
+
             data16 = await d3.csv(
                 "https://mengmutj.github.io/allyearscsv.csv",
                 (d) => {
                     if (d.Year === "2016") {
                         return {
                             country: d.Country,
-                            dystopiaResidual: d.Dystopia_Residual,
-                            family: d.Family,
-                            freedom: d.Freedom,
                             gdp: d.GDP_Capita,
-                            generosity: d.Generosity,
-                            corruption: d.Gov_Corruption,
                             lifeExpectancy: d.Life_Expectancy,
                             rank: d.Rank,
-                            region: d.Region,
                             score: d.Score,
-                            year: d.Year,
+                            year: d.Year
                         };
                     }
                 }
@@ -173,17 +162,11 @@
                     if (d.Year === "2017") {
                         return {
                             country: d.Country,
-                            dystopiaResidual: d.Dystopia_Residual,
-                            family: d.Family,
-                            freedom: d.Freedom,
                             gdp: d.GDP_Capita,
-                            generosity: d.Generosity,
-                            corruption: d.Gov_Corruption,
                             lifeExpectancy: d.Life_Expectancy,
                             rank: d.Rank,
-                            region: d.Region,
                             score: d.Score,
-                            year: d.Year,
+                            year: d.Year
                         };
                     }
                 }
@@ -195,17 +178,11 @@
                     if (d.Year === "2018") {
                         return {
                             country: d.Country,
-                            dystopiaResidual: d.Dystopia_Residual,
-                            family: d.Family,
-                            freedom: d.Freedom,
                             gdp: d.GDP_Capita,
-                            generosity: d.Generosity,
-                            corruption: d.Gov_Corruption,
                             lifeExpectancy: d.Life_Expectancy,
                             rank: d.Rank,
-                            region: d.Region,
                             score: d.Score,
-                            year: d.Year,
+                            year: d.Year
                         };
                     }
                 }
@@ -217,22 +194,16 @@
                     if (d.Year === "2019") {
                         return {
                             country: d.Country,
-                            dystopiaResidual: d.Dystopia_Residual,
-                            family: d.Family,
-                            freedom: d.Freedom,
                             gdp: d.GDP_Capita,
-                            generosity: d.Generosity,
-                            corruption: d.Gov_Corruption,
                             lifeExpectancy: d.Life_Expectancy,
                             rank: d.Rank,
-                            region: d.Region,
                             score: d.Score,
-                            year: d.Year,
+                            year: d.Year
                         };
                     }
                 }
             );
-            console.log(data15)
+
             updateBar(data15)
         };
     </script>
