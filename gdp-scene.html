@@ -32,7 +32,14 @@
         </div>
     </nav>
 
-    <section id="dataviz"><svg id="happiness"></svg></section>
+    <section id="datavizscatter"><svg id="happiness"></svg></section>
+    <section id="scatter-text">
+        <p>
+            During 2015-2019, the US had its highest happiness score, 7.119, with a GDP per capita of 1.3945 in 2015. 
+            The US had its lowest happiness score, 6.886, with a GDP per capita of 1.3980 in 2018. 
+            The observation was that GDP per capita had a negative impact on the happiness score on the US during 2015-2019. 
+        </p>
+    </section>
     <footer>
         Data source: &nbsp
         <a target="_blank" href="https://www.kaggle.com/datasets/unsdsn/world-happiness">World Happiness Report from
@@ -150,7 +157,7 @@
                 d3.select(".annotation-group").remove()
             }
 
-            const Tooltip = d3.select("#dataviz")
+            const Tooltip = d3.select("#datavizscatter")
                 .append("div")
                 .style("opacity", 0)
                 .attr("class", "tooltip")
@@ -175,6 +182,11 @@
                 Tooltip
                     .style("opacity", 0)
             }
+
+            const colorScale = d3.scaleLinear()
+                .domain([0,7])
+                .range(["#2c7bb6", "#ffff8c", "#d7191c"])
+                .interpolate(d3.interpolateHcl);
 
             const year = data[0]['year']
             svg.selectAll(".title").remove();
@@ -204,7 +216,10 @@
                 .attr("cx", d => x(Number(d.score)))
                 .attr("cy", d => y(Number(d.gdp)))
                 .attr("r", 5)
-                .style("fill", "#69b3a2")
+                .attr("fill", function (d,i) {
+                    return colorScale(d.score)
+                })
+                .attr("stroke", "#c5d4a1")
                 .on("mouseover", mouseover)
                 .on("mousemove", mousemove)
                 .on("mouseleave", mouseleave)
